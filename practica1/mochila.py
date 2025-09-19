@@ -1,11 +1,12 @@
 import random
 import time
 import math
+import numpy as np
 #delimitamos las variables para no salirnos de los rangos del problema 
 n_cromosomas = 7
 n_parejas = 20
 max_peso = 30
-tot_ob= 5
+tot_ob= 8
 
 #diccionario con todos los productos que pueden llevar los hermanos, tambien este es el orden en el arreglo para acceder a ellos 
 productos = {
@@ -13,7 +14,6 @@ productos = {
 	"peso":[4,2,5,5,2,1.5,1],
 	"ganancia":[10,8,12,6,3,2,2]
 }
-
 
 
 def primera_gen():
@@ -36,20 +36,17 @@ def primera_gen():
 #para validar que los hijos tengan un peso <= 30
 def validar(hijos):
 	for i in range(n_parejas):
-		total_peso = calc_peso(hijos[i])
+		total_peso = np.dot(hijos[i],productos["peso"])
 		if total_peso > max_peso:
 			hijos[i] = bajar_peso(hijos[i])
 	return hijos
 
 
-def calc_peso(hijo):
-	total = 0
-	for j in range(n_cromosomas):
-		total += productos["peso"][j] * hijo[j] 
-	return total
+def calc_peso(hijo): 
+	return 
 
 def bajar_peso(hijo):
-	m_peso = calc_peso(hijo)
+	m_peso = np.dot(hijo,productos["peso"])
 	while m_peso > max_peso:	
 		cromo = random.randint(0, n_cromosomas - 1)
 		if cromo == 1 and (hijo[1] < 3):
@@ -58,7 +55,7 @@ def bajar_peso(hijo):
 			continue
 		elif hijo[cromo] > 0:
 			hijo[cromo] -= 1
-		m_peso = calc_peso(hijo)
+		m_peso = np.dot(hijo,productos["peso"])
 	return hijo
 
 
