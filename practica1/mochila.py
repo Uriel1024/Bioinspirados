@@ -4,7 +4,7 @@ import math
 import numpy as np
 #delimitamos las variables para no salirnos de los rangos del problema 
 n_cromosomas = 7
-n_parejas = 20
+n_parejas = 10
 max_peso = 30
 tot_ob= 8
 
@@ -46,14 +46,16 @@ def calc_peso(hijo):
 	return 
 
 def bajar_peso(hijo):
+	#se calcula el peso del hijo
 	m_peso = np.dot(hijo,productos["peso"])
+	#mientras sea mayor que max_peso se siguen restando cromosomas
 	while m_peso > max_peso:	
 		cromo = random.randint(0, n_cromosomas - 1)
-		if cromo == 1 and (hijo[1] < 3):
+		if cromo == 1 and (hijo[1] <= 3): #para seguir cumpliendo la restriccion
 			continue  
-		elif cromo == 2 and (hijo[2] < 2):
+		elif cromo == 2 and (hijo[2] <= 2): #para seguir cumpliendo la restriccion
 			continue
-		elif hijo[cromo] > 0:
+		elif hijo[cromo] > 0: #para evitar tener cromosomas negativos
 			hijo[cromo] -= 1
 		m_peso = np.dot(hijo,productos["peso"])
 	return hijo
@@ -71,13 +73,28 @@ def mutacion(hijos):
 				hijos[i][j] = random.randint(1,tot_ob)
 	return hijos
 
+def fitness(padres,madres):
+	fitness_p = []
+	fitness_m = []
+	fit_total = 0
+	for i in range(n_parejas):
+		fitness_p.append(int(np.dot(productos["ganancia"],padres[i])))
+		fitness_m.append(int(np.dot(productos["ganancia"],madres[i])))
+		fit_total +=  fitness_p[i] + fitness_m[i]
+
+
+	return fit_total, fitness_m, fitness_p
 
 
 if __name__ == '__main__':
 	padres, madres = primera_gen() 	
 	padres = mutacion(padres)
 	madres = mutacion(madres)
-	padres_1 = validar(padres)
-	madres_1 = validar(madres)
-	print(f"Los padres que cumplen la condicion:{padres_1}\n")
-	print(f"las madres que cumplen la condicion:{madres_1}\n")
+	padres = validar(padres)
+	madres = validar(madres)
+	print(f"Los padres que cumplen la condicion:{padres}\n")
+	print(f"las madres que cumplen la condicion:{madres}\n")
+	fit_total, fit_p, fit_m = fitness(padres,madres)	
+	print(f"\n{fit_total}\n")
+	print(f"\n{fit_p}\n")
+	print(f"\n{fit_m}\n")
