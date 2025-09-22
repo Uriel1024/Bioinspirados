@@ -4,9 +4,10 @@ import math
 import numpy as np
 #delimitamos las variables para no salirnos de los rangos del problema 
 n_cromosomas = 7
-n_parejas = 10
+n_individuos = 20
 max_peso = 30
 tot_ob= 8
+n_generaciones = 10
 
 #diccionario con todos los productos que pueden llevar los hermanos, tambien este es el orden en el arreglo para acceder a ellos 
 productos = {
@@ -17,84 +18,99 @@ productos = {
 
 
 def primera_gen():
-	padre = [[0 for _ in range(n_cromosomas)] for _ in range(n_parejas)]
-	madre =	[[0 for _ in range(n_cromosomas)] for _ in range(n_parejas)]
-	for i in range(n_parejas):
+	generacion = [[0]*n_cromosomas]*n_individuos
+	for i in range(n_individuos):
 		for j in range(n_cromosomas):
 			#para garantizar que la primera generacion cumpla con la condicion de >= 3 love_potion && skiving_snackbox >= 2
 			if j == 1:
-				padre[i][j] = random.randint(3,tot_ob)	
-				madre[i][j] = random.randint(3,tot_ob)				
+				generacion[i][j] = random.randint(3,tot_ob)	
 			elif j == 2:
-				padre[i][j] = random.randint(2,tot_ob)	
-				madre[i][j] = random.randint(2,tot_ob)
+				generacion[i][j] = random.randint(2,tot_ob)	
 			else:
-				padre[i][j] = random.randint(0,tot_ob)	
-				madre[i][j] = random.randint(0,tot_ob) 
-	return padre, madre
+				generacion[i][j] = random.randint(0,tot_ob) 
+	return generacion
+
+
 
 #para validar que los hijos tengan un peso <= 30
-def validar(hijos):
-	for i in range(n_parejas):
-		total_peso = np.dot(hijos[i],productos["peso"])
+def validar(generacion):
+	for i in range(n_individuos):
+		total_peso = np.dot(generacion[i],productos["peso"])
 		if total_peso > max_peso:
-			hijos[i] = bajar_peso(hijos[i])
-	return hijos
+			generacion[i] = bajar_peso(generacion[i])
 
 
-def calc_peso(hijo): 
-	return 
 
-def bajar_peso(hijo):
+def bajar_peso(individio):
 	#se calcula el peso del hijo
-	m_peso = np.dot(hijo,productos["peso"])
+	m_peso = np.dot(individio,productos["peso"])
 	#mientras sea mayor que max_peso se siguen restando cromosomas
 	while m_peso > max_peso:	
 		cromo = random.randint(0, n_cromosomas - 1)
-		if cromo == 1 and (hijo[1] <= 3): #para seguir cumpliendo la restriccion
+		if cromo == 1 and (individio[1] <= 3): #para seguir cumpliendo la restriccion
 			continue  
-		elif cromo == 2 and (hijo[2] <= 2): #para seguir cumpliendo la restriccion
+		elif cromo == 2 and (individio[2] <= 2): #para seguir cumpliendo la restriccion
 			continue
-		elif hijo[cromo] > 0: #para evitar tener cromosomas negativos
-			hijo[cromo] -= 1
-		m_peso = np.dot(hijo,productos["peso"])
-	return hijo
+		elif individio[cromo] > 0: #para evitar tener cromosomas negativos
+			individio[cromo] -= 1
+		m_peso = np.dot(individio,productos["peso"])
+	return individio
 
 
-def mutacion(hijos):
-	for i in range(n_parejas):
+def mutacion(generacion):
+	for i in range(n_individuos):
 		if random.random() < .1: #probabilidad de alterar un gen del .1 o 10%
 			j = random.randint(0, n_cromosomas -1) #seleccionamos un cromosoma al azar
 			if j == 1:
-				hijos[i][j] = random.randint(3,tot_ob) #para cumplir que se deben de llevar al menos 3 love_potion
+				generacion[i][j] = random.randint(3,tot_ob) #para cumplir que se deben de llevar al menos 3 love_potion
 			elif j == 2:
-				hijos[i][j] = random.randint(2,tot_ob) #para cumplir que se deben de llevar al menos 2 skiving_snackbox
+				generacion[i][j] = random.randint(2,tot_ob) #para cumplir que se deben de llevar al menos 2 skiving_snackbox
 			else:
-				hijos[i][j] = random.randint(1,tot_ob)
+				generacion[i][j] = random.randint(1,tot_ob)
 	return hijos
 
-def fitness(padres,madres):
-	fitness_p = []
-	fitness_m = []
+#para calcular el fitness total y el fitness individual de cada uno de los hijos
+def fitness(generacion):
+	fitness_g = []
 	fit_total = 0
-	for i in range(n_parejas):
-		fitness_p.append(int(np.dot(productos["ganancia"],padres[i])))
-		fitness_m.append(int(np.dot(productos["ganancia"],madres[i])))
-		fit_total +=  fitness_p[i] + fitness_m[i]
+	for i in range(n_individuos):
+		fitness_p.append(int(np.dot(productos["ganancia"],generacion[i])))
+		fit_total +=  fitness_g	[i] 
+	return fitness_g, fit_total
 
+def get_ruleta(generacion):
+	ruleta = []
+	for individio in generacion:
+		fit = 0
+		for gen in individio:
+			fit += generacion
+		ruleta.append(fit)
+	return ruleta
 
-	return fit_total, fitness_m, fitness_p
-
+#ruleta para que los hijos se reproduzcan con ruleta
+def girar_ruleta(ruleta):
+	total = ruleta[-2]
+	r = random.randint(1, total)
+	i = 0
+	while r < ruleta[i]: 
+		i += 1
+	return i-1
 
 if __name__ == '__main__':
-	padres, madres = primera_gen() 	
-	padres = mutacion(padres)
-	madres = mutacion(madres)
-	padres = validar(padres)
-	madres = validar(madres)
-	print(f"Los padres que cumplen la condicion:{padres}\n")
-	print(f"las madres que cumplen la condicion:{madres}\n")
-	fit_total, fit_p, fit_m = fitness(padres,madres)	
-	print(f"\n{fit_total}\n")
-	print(f"\n{fit_p}\n")
-	print(f"\n{fit_m}\n")
+	actual_gen = primera_gen()
+	validar(first_gen)
+	
+	print(f"Los individios que cumplen la condicion de la primera generacion son: \n\n{first_gen}\n")
+
+	#son 10 generaciones
+	for _ in range(n_generaciones):	
+		ruleta = get_ruleta(actual_gen)
+		netx_gen = []
+		for _ in range(n_individuos):
+			i = girar_ruleta(ruleta)
+			j = i
+			while j = i: 
+				j = girar_ruleta(ruleta)
+			netx_gen.append(reproducir(actual_gen[i], actual_gen[j]))
+			netx_gen.append(reproducir(actual_gen[i], actual_gen[j]))
+		validar(netx_gen)
