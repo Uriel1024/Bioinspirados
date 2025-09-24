@@ -1,116 +1,119 @@
 import random
-import time
-import math
 import numpy as np
 #delimitamos las variables para no salirnos de los rangos del problema 
-n_cromosomas = 7
-n_individuos = 20
-max_peso = 30
-tot_ob= 8
-n_generaciones = 10
+n_genes = 7
+n_individuos = 10
+tot_ob= 10
+n_generaciones = 50
 
-#diccionario con todos los productos que pueden llevar los hermanos, tambien este es el orden en el arreglo para acceder a ellos 
-productos = {
-	"dulces" : ["decoy_detonators" ,"love_potion", "extendable_ears" ,"skiving_snackbox" ,"fever_fudge", "puking_pastilles","nosebleed_nougat"],	
-	"peso":[4,2,5,5,2,1.5,1],
-	"ganancia":[10,8,12,6,3,2,2]
-}
-
+dulces = ["decoy_detonators" ,"love_potion", "extendable_ears" ,"skiving_snackbox" ,"fever_fudge", "puking_pastilles","nosebleed_nougat"]
+peso = [4,2,5,5,2,1.5,1]
+ganancia = [10,8,12,6,3,2,2]
 
 def primera_gen():
-	generacion = [[0]*n_cromosomas]*n_individuos
-	for i in range(n_individuos):
-		for j in range(n_cromosomas):
-			#para garantizar que la primera generacion cumpla con la condicion de >= 3 love_potion && skiving_snackbox >= 2
-			if j == 1:
-				generacion[i][j] = random.randint(3,tot_ob)	
-			elif j == 2:
-				generacion[i][j] = random.randint(2,tot_ob)	
-			else:
-				generacion[i][j] = random.randint(0,tot_ob) 
+	generacion = []
+	for _ in range(n_individuos):
+		individuo = [0] * n_genes
+		individuo[1] = 3
+		individuo[3] = 2
+		capacidad = 14
+		i = random.randint(0,6)
+		for j in range(n_genes):
+			k = (i+j)%7
+			max_obj = int(capacidad // peso[k])
+			max_obj = min(max_obj, tot_ob)
+			individuo[k] += random.randint(0,max_obj)
+			capacidad -= individuo[k]*peso[k]
+			if k == 1: capacidad += 6
+			if k == 3: capacidad += 10
+		generacion.append(individuo)
 	return generacion
-
-
-
-#para validar que los hijos tengan un peso <= 30
-def validar(generacion):
-	for i in range(n_individuos):
-		total_peso = np.dot(generacion[i],productos["peso"])
-		if total_peso > max_peso:
-			generacion[i] = bajar_peso(generacion[i])
-
-
-
-def bajar_peso(individio):
-	#se calcula el peso del hijo
-	m_peso = np.dot(individio,productos["peso"])
-	#mientras sea mayor que max_peso se siguen restando cromosomas
-	while m_peso > max_peso:	
-		cromo = random.randint(0, n_cromosomas - 1)
-		if cromo == 1 and (individio[1] <= 3): #para seguir cumpliendo la restriccion
-			continue  
-		elif cromo == 2 and (individio[2] <= 2): #para seguir cumpliendo la restriccion
-			continue
-		elif individio[cromo] > 0: #para evitar tener cromosomas negativos
-			individio[cromo] -= 1
-		m_peso = np.dot(individio,productos["peso"])
-	return individio
-
 
 def mutacion(generacion):
 	for i in range(n_individuos):
 		if random.random() < .1: #probabilidad de alterar un gen del .1 o 10%
-			j = random.randint(0, n_cromosomas -1) #seleccionamos un cromosoma al azar
+			j = random.randint(0, n_genes -1) #seleccionamos un cromosoma al azar
 			if j == 1:
-				generacion[i][j] = random.randint(3,tot_ob) #para cumplir que se deben de llevar al menos 3 love_potion
-			elif j == 2:
-				generacion[i][j] = random.randint(2,tot_ob) #para cumplir que se deben de llevar al menos 2 skiving_snackbox
+				generacion[i][j] = random.randint(3,tot_ob//2) #para cumplir que se deben de llevar al menos 3 love_potion
+			elif j == 3:
+				generacion[i][j] = random.randint(2,tot_ob//2) #para cumplir que se deben de llevar al menos 2 skiving_snackbox
 			else:
-				generacion[i][j] = random.randint(1,tot_ob)
-	return hijos
+				generacion[i][j] = random.randint(1,tot_ob//2)
 
-#para calcular el fitness total y el fitness individual de cada uno de los hijos
-def fitness(generacion):
-	fitness_g = []
-	fit_total = 0
-	for i in range(n_individuos):
-		fitness_p.append(int(np.dot(productos["ganancia"],generacion[i])))
-		fit_total +=  fitness_g	[i] 
-	return fitness_g, fit_total
+def get_fitness(cromosoma):
+	if cromosoma[1] < 3 or cromosoma[3] < 2 or np.dot(peso,cromosoma) > 30:
+		return 1
+	return np.dot(ganancia,cromosoma)
 
 def get_ruleta(generacion):
 	ruleta = []
-	for individio in generacion:
-		fit = 0
-		for gen in individio:
-			fit += generacion
+	fit = 0
+	for individuo in generacion:
+		fit += get_fitness(individuo)
 		ruleta.append(fit)
 	return ruleta
-
+	
 #ruleta para que los hijos se reproduzcan con ruleta
 def girar_ruleta(ruleta):
-	total = ruleta[-2]
+	total = ruleta[-1]
 	r = random.randint(1, total)
 	i = 0
-	while r < ruleta[i]: 
+	while i < len(ruleta) and ruleta[i] < r: 
 		i += 1
-	return i-1
+	print(i)
+	return i
+
+def reproducir(padre1, padre2):
+	hijo1 = [0]*7
+	hijo2 = [0]*7
+	for i in range(7):
+		hijo1[i] = padre1[i]
+		hijo2[i] = padre2[i]
+		if random.random() < 0.5:
+			aux = hijo1[i]
+			hijo1[i] = hijo2[i]
+			hijo2[i] = aux
+	return hijo1, hijo2
 
 if __name__ == '__main__':
 	actual_gen = primera_gen()
-	validar(first_gen)
 	
-	print(f"Los individios que cumplen la condicion de la primera generacion son: \n\n{first_gen}\n")
-
-	#son 10 generaciones
-	for _ in range(n_generaciones):	
+	print(f"Los individios que cumplen la condicion de la primera generacion son: \n\n{actual_gen}\n")
+	best = []
+	best_fit = 0
+	
+	for _ in range(n_generaciones):
 		ruleta = get_ruleta(actual_gen)
-		netx_gen = []
-		for _ in range(n_individuos):
+		print('\n1', ruleta)
+		next_gen = []
+		for _ in range(n_individuos//2):
+			print
 			i = girar_ruleta(ruleta)
 			j = i
-			while j = i: 
+			while j == i:
 				j = girar_ruleta(ruleta)
-			netx_gen.append(reproducir(actual_gen[i], actual_gen[j]))
-			netx_gen.append(reproducir(actual_gen[i], actual_gen[j]))
-		validar(netx_gen)
+			
+			ind1, ind2 = [], []
+			if random.random() < .85:
+				ind1, ind2 = reproducir(actual_gen[i], actual_gen[j])
+			else:
+				ind1 = actual_gen[i]
+				ind2 = actual_gen[j]
+			
+			next_gen.append(ind1)
+			next_gen.append(ind2)
+			if get_fitness(ind1) > best_fit and np.dot(ind1, peso) <= 30:
+				best = ind1.copy()
+				best_fit = get_fitness(ind1)
+			if get_fitness(ind2) > best_fit and np.dot(ind2, peso) <= 30:
+				best = ind1.copy()
+				best_fit = get_fitness(ind2)
+		actual_gen = next_gen
+		mutacion(actual_gen)
+
+	print(f'\nEl mejor fit es: {best_fit} \n' )
+	print('De la mochila con los siguientes dulces. \n')
+	for i in range(len(best)):
+		print(f"producto: {dulces[i]}, con una cantidad de {best[i]}\n")
+	print('\nCon peso', np.dot(best, peso))
+	
