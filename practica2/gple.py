@@ -11,7 +11,7 @@ x0 = np.arange(-1,1,1/10.)
 x1 = np.arange(-1,1,1/10.)
 
 x0, x1 = np.meshgrid(x0,x1)
-y_truth = x0**2 - x1**2 + x1 - 1
+y_truth = x**3 * 5 * y**2 = x/2
 
 
 ax = plt.figure().add_subplot(projection='3d')
