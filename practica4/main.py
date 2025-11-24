@@ -1,6 +1,5 @@
 import random
 	
-
 def reciproco_matriz(matriz,q):
 	for i in range(len(matriz)):
 		for j in range(len(matriz[0])):
@@ -38,7 +37,6 @@ def fitness(nodosv,distancias):
 
 
 def actualizar_feromonas(feromonas,nodosv,fit,a,b,p):
-	print(nodosv)
 	for i in range(len(feromonas)):
 		for j in range(len(feromonas)):
 			feromonas[i][j] = (1-p)*feromonas[i][j]
@@ -109,6 +107,12 @@ def indice_min(lista):
 			valor = lista[i]
 	return indc, lista[indc]
 
+def mejor_ruta(actual,rglobal):
+	if sum(actual) < sum(rglobal):
+		return actual
+	else: 
+		return rglobal
+
 #todas las variables y matrices que vamos a ocupar durante el programa
 distancias  = ([[0,6,9,17,13,21],[6,0,19,21,12,18]
 	,[9,19,0,20,23,11],[17,21,20,0,15,10],
@@ -125,6 +129,9 @@ ite = 0
 tot = [0] * n
 best = [0] * n
 mejor = []
+best_gen = ite
+mejor_ruta_global = [100] * 6
+fitness_global = 500
 
 if __name__ == '__main__':
 
@@ -133,9 +140,13 @@ if __name__ == '__main__':
 		canmino_actual = definir_rutas(suma,n)
 		fit = fitness(canmino_actual,distancias)
 		g,best_fitness = indice_min(fit)
-		mejor_ruta = canmino_actual[g]
+		mejor_ruta_actual = canmino_actual[g]
 		ite += 1
 		reciproco_arr(fit,q)
+		print(f"la mejor ruta de la generacio {ite} es {mejor_ruta_actual} con un fitness de {best_fitness}")
 		feromonas = actualizar_feromonas(feromonas,canmino_actual,fit,a,b,p)
+		mejor_ruta_global = mejor_ruta(mejor_ruta_actual,mejor_ruta_global)
+		fitness_global = min(fitness_global,best_fitness)
 
-	print(f"El mejor camino que se encontró es: {mejor_ruta} con un fitness de {best_fitness} ")
+	print(f"\n\nEl mejor camino que se encontró es: {mejor_ruta_global} con un fitness de {fitness_global} ")
+	
