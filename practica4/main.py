@@ -107,12 +107,6 @@ def indice_min(lista):
 			valor = lista[i]
 	return indc, lista[indc]
 
-def mejor_ruta(actual,rglobal):
-	if sum(actual) < sum(rglobal):
-		return actual
-	else: 
-		return rglobal
-
 #todas las variables y matrices que vamos a ocupar durante el programa
 distancias  = ([[0,6,9,17,13,21],[6,0,19,21,12,18]
 	,[9,19,0,20,23,11],[17,21,20,0,15,10],
@@ -132,6 +126,7 @@ mejor = []
 best_gen = ite
 mejor_ruta_global = [100] * 6
 fitness_global = 500
+mejores_rutas = []
 
 if __name__ == '__main__':
 
@@ -145,8 +140,11 @@ if __name__ == '__main__':
 		reciproco_arr(fit,q)
 		print(f"la mejor ruta de la generacio {ite} es {mejor_ruta_actual} con un fitness de {best_fitness}")
 		feromonas = actualizar_feromonas(feromonas,canmino_actual,fit,a,b,p)
-		mejor_ruta_global = mejor_ruta(mejor_ruta_actual,mejor_ruta_global)
-		fitness_global = min(fitness_global,best_fitness)
+		if best_fitness < fitness_global:
+			fitness_global = best_fitness
+			mejor_ruta_global = mejor_ruta_actual
+		if best_fitness == 63:
+			mejores_rutas.append(mejor_ruta_actual)
 
 	print(f"\n\nEl mejor camino que se encontró es: {mejor_ruta_global} con un fitness de {fitness_global} ")
-	
+	print(f"\n\nLas mejores rutas son {mejores_rutas}")	
