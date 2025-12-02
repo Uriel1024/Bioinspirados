@@ -1,4 +1,3 @@
-
 #Practica realizada por  Rodríguez Juárez Héctor Sajoni y Velazquez Arrieta Eduardo Uriel 
 import random
 import numpy as np
@@ -25,7 +24,7 @@ def primera_gen():
 			max_obj = int(capacidad // peso[k])
 			max_obj = min(max_obj, tot_ob)
 			individuo[k] += random.randint(0,max_obj)
-			capacidad -= individuo[k]*peso[k]
+			capacidad -= individuo[k]*peso[k]z	
 			if k == 1: capacidad += 6
 			if k == 3: capacidad += 10
 		generacion.append(individuo)

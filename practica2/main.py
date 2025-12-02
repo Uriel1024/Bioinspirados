@@ -33,6 +33,8 @@ pset.addPrimitive(pDiv, 2)
 pset.addEphemeralConstant("rand105", partial(random.randint, 2, 5))
 pset.renameArguments(ARG0='x', ARG1='y')
 
+
+
 creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
 creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMin)
 
@@ -82,7 +84,8 @@ def main():
 
     a = 8
     #while a > 1:
-    pop, log = algorithms.eaSimple(pop, toolbox, 0.5, 0.1, 50, stats=mstats, halloffame=hof, verbose=True)
+    pop, log = algorithms.eaSimple(pop, toolbox, 
+        0.5, 0.1, 50, stats=mstats, halloffame=hof, verbose=True)
     print(hof[0])
     func = toolbox.compile(hof[0])
     sqerrors = ((func(x, y) - x**3 * 5*y**2 - x/2)**2 for x, y in POINTS)
